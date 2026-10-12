@@ -4,7 +4,6 @@ anyio==4.15.1
 certifi==2026.7.22
 click==8.5.0
 colorama==0.4.6
--e git+https://github.com/alexandrmotologa/docuvision.git@da9aba4606fbd0b44282b60b87b15a44957b1910#egg=docuvision
 et_xmlfile==2.0.0
 fastapi==0.143.0
 h11==0.16.0
