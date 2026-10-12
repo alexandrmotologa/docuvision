@@ -1,8 +1,14 @@
-# DocuVision
+<p align="center">
+  <img src="docs/images/logo.png?raw=true" alt="DocuVision Logo" width="130" style="border-radius: 24px;" />
+</p>
 
-[![CI](https://github.com/alexandrmotologa/docuvision/actions/workflows/ci.yml/badge.svg)](https://github.com/alexandrmotologa/docuvision/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue)](pyproject.toml)
+<h1 align="center">DocuVision</h1>
+
+<p align="center">
+  <a href="https://github.com/alexandrmotologa/docuvision/actions/workflows/ci.yml"><img src="https://github.com/alexandrmotologa/docuvision/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
+  <a href="pyproject.toml"><img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue" alt="Python"></a>
+</p>
 
 Zero-cloud, high-fidelity multimodal document intelligence and structured schema extraction pipeline powered by local Vision-Language Models.
 

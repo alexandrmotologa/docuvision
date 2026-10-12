@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <clipPath id="squircle-clip">
+      <rect x="24" y="24" width="976" height="976" rx="220" />
+    </clipPath>
+
+    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f5ff"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <linearGradient id="cyan-optic" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#00f5ff"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <linearGradient id="beak-steel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#94a3b8"/>
+      <stop offset="40%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+
+    <filter id="subtle-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.16" />
+    </filter>
+  </defs>
+
+  <!-- Luxury White Squircle Container -->
+  <rect x="24" y="24" width="976" height="976" rx="220" fill="#ffffff" stroke="#e2e8f0" stroke-width="6" />
+
+  <g clip-path="url(#squircle-clip)">
+    <g transform="translate(512, 512)" filter="url(#subtle-shadow)">
+
+      <!-- Hexagonal Architectural Gateway Frame -->
+      <polygon points="
+        0,-395
+        342,-198
+        342,198
+        0,395
+        -342,198
+        -342,-198
+      " fill="none" stroke="#0f172a" stroke-width="36" stroke-linejoin="round" />
+
+      <polygon points="
+        0,-360
+        310,-180
+        310,180
+        0,360
+        -310,180
+        -310,-180
+      " fill="none" stroke="#00f5ff" stroke-width="4" opacity="0.4" stroke-dasharray="16, 12" />
+
+      <!-- Document Vision Scanner Reticle / Corner Brackets -->
+      <path d="M -230,-290 L -265,-290 L -265,-255" fill="none" stroke="#00f5ff" stroke-width="4.5" stroke-linecap="round" opacity="0.8"/>
+      <path d="M 230,-290 L 265,-290 L 265,-255" fill="none" stroke="#00f5ff" stroke-width="4.5" stroke-linecap="round" opacity="0.8"/>
+      <path d="M -230,290 L -265,290 L -265,255" fill="none" stroke="#00f5ff" stroke-width="4.5" stroke-linecap="round" opacity="0.8"/>
+      <path d="M 230,290 L 265,290 L 265,255" fill="none" stroke="#00f5ff" stroke-width="4.5" stroke-linecap="round" opacity="0.8"/>
+
+      <!-- 100% Watertight Solid Base Silhouette (Tapered Raptor/Owl Body) -->
+      <polygon points="
+        0,-340
+        65,-285
+        155,-335
+        185,-230
+        260,-130
+        240,-10
+        190,110
+        135,225
+        70,330
+        0,355
+        -70,330
+        -135,225
+        -190,110
+        -240,-10
+        -260,-130
+        -185,-230
+        -155,-335
+        -65,-285
+      " fill="#0b0f19" stroke="#0f172a" stroke-width="4" stroke-linejoin="round" />
+
+      <!-- Crown & Feathery Raptor Ear Tuft Facets -->
+      <polygon points="0,-340 65,-285 0,-230" fill="#334155" />
+      <polygon points="0,-340 -65,-285 0,-230" fill="#1e293b" />
+      <polygon points="65,-285 155,-335 125,-220" fill="#475569" />
+      <polygon points="-65,-285 -155,-335 -125,-220" fill="#1e293b" />
+      <polygon points="155,-335 185,-230 125,-220" fill="#64748b" />
+      <polygon points="-155,-335 -185,-230 -125,-220" fill="#334155" />
+
+      <!-- Flared Upper Cheeks (Facial Disc Wings) -->
+      <polygon points="185,-230 260,-130 170,-110 125,-220" fill="#334155" />
+      <polygon points="-185,-230 -260,-130 -170,-110 -125,-220" fill="#0f172a" />
+      <polygon points="260,-130 240,-10 170,-20 170,-110" fill="#1e293b" />
+      <polygon points="-260,-130 -240,-10 -170,-20 -170,-110" fill="#0b0f19" />
+      <polygon points="240,-10 190,110 120,80 170,-20" fill="#334155" />
+      <polygon points="-240,-10 -190,110 -120,80 -170,-20" fill="#1e293b" />
+
+      <!-- Piercing Raptor Brow Ridge (Sharp V-Monolith) -->
+      <polygon points="0,-230 125,-220 75,-125 0,-145" fill="#475569" />
+      <polygon points="0,-230 -125,-220 -75,-125 0,-145" fill="#1e293b" />
+      <polygon points="0,-145 75,-125 40,-55 0,-65" fill="#334155" />
+      <polygon points="0,-145 -75,-125 -40,-55 0,-65" fill="#1e293b" />
+
+      <!-- Geometric Optical Sockets (Facial Disc Frames) -->
+      <polygon points="75,-125 170,-110 170,-20 95,-15 40,-55" fill="#070c14" stroke="#00f5ff" stroke-width="2" opacity="0.9" />
+      <polygon points="-75,-125 -170,-110 -170,-20 -95,-15 -40,-55" fill="#070c14" stroke="#00f5ff" stroke-width="2" opacity="0.9" />
+
+      <!-- Fierce Alert Optics - Outer corner angled UPWARD toward ears -->
+      <!-- Right Eye -->
+      <polygon points="55,-80 155,-95 140,-40 68,-40" fill="url(#cyan-optic)" />
+      <polygon points="80,-75 130,-83 120,-50 85,-48" fill="#040810" />
+      <!-- Slit / Diamond Pupil -->
+      <polygon points="105,-78 116,-66 105,-54 94,-66" fill="#00f5ff" />
+      <polygon points="105,-73 110,-66 105,-59 100,-66" fill="#ffffff" />
+
+      <!-- Left Eye (Symmetrical Alert Gaze) -->
+      <polygon points="-55,-80 -155,-95 -140,-40 -68,-40" fill="url(#cyan-optic)" />
+      <polygon points="-80,-75 -130,-83 -120,-50 -85,-48" fill="#040810" />
+      <!-- Slit / Diamond Pupil -->
+      <polygon points="-105,-78 -116,-66 -105,-54 -94,-66" fill="#00f5ff" />
+      <polygon points="-105,-73 -110,-66 -105,-59 -100,-66" fill="#ffffff" />
+
+      <!-- Sharp Geometric Falcon/Owl Beak (Precision Hook) -->
+      <polygon points="0,-65 32,-45 0,70" fill="url(#beak-steel)" />
+      <polygon points="0,-65 -32,-45 0,70" fill="#0f172a" />
+      <polygon points="0,-45 22,-25 0,85" fill="url(#cyan-glow)" opacity="0.9" />
+      <polygon points="0,-45 -22,-25 0,85" fill="#0284c7" opacity="0.95" />
+      <polygon points="0,20 12,50 0,105" fill="#38bdf8" />
+      <polygon points="0,20 -12,50 0,105" fill="#0284c7" />
+
+      <!-- Tapering Jaw / Muzzle Plates -->
+      <polygon points="40,-55 95,-15 120,80 50,55 0,55" fill="#334155" />
+      <polygon points="-40,-55 -95,-15 -120,80 -50,55 -0,55" fill="#1e293b" />
+      <polygon points="50,55 120,80 75,135 0,105" fill="#1e293b" />
+      <polygon points="-50,55 -120,80 -75,135 0,105" fill="#0f172a" />
+
+      <!-- Aerodynamic Chest Armor - Origami Document Sheet Folds -->
+      <polygon points="0,105 75,135 120,195 0,225" fill="#334155" stroke="#00f5ff" stroke-width="1.5" />
+      <polygon points="0,105 -75,135 -120,195 0,225" fill="#1e293b" stroke="#00f5ff" stroke-width="1.5" />
+
+      <polygon points="75,135 190,110 165,200 120,195" fill="#475569" />
+      <polygon points="-75,135 -190,110 -165,200 -120,195" fill="#1e293b" />
+
+      <!-- Sleek Tapered Breastplate -->
+      <polygon points="0,225 120,195 135,285 0,315" fill="#1e293b" />
+      <polygon points="0,225 -120,195 -135,285 0,315" fill="#0f172a" />
+
+      <polygon points="120,195 165,200 135,225 135,285" fill="#334155" />
+      <polygon points="-120,195 -165,200 -135,225 -135,285" fill="#1e293b" />
+
+      <!-- Document Bounding-Box Reticle Emblem on Heart Plate -->
+      <polygon points="0,235 35,275 0,315 -35,275" fill="none" stroke="#00f5ff" stroke-width="3" opacity="0.85" />
+      <polygon points="0,248 22,275 0,302 -22,275" fill="url(#cyan-glow)" opacity="0.8" />
+
+      <!-- Tapered Tail Plumes -->
+      <polygon points="0,315 70,330 0,355" fill="#334155" />
+      <polygon points="0,315 -70,330 0,355" fill="#0f172a" />
+      <polygon points="70,330 135,225 110,315" fill="#1e293b" />
+      <polygon points="-70,330 -135,225 -110,315" fill="#0b0f19" />
+
+    </g>
+  </g>
+</svg>
