@@ -41,6 +41,8 @@ DocuVision converts multi-page PDFs, scans, receipts, invoices, and complex bala
              [ Validated JSON ]  +  [ Markdown Tables ]
 ```
 
+![DocuVision Interactive Studio Demo](docs/images/docuvision_demo.gif)
+
 ---
 
 ## Features
@@ -116,6 +118,14 @@ Then open `http://localhost:8000` in your web browser. The studio provides:
 2. Page navigation with visual bounding box highlights.
 3. Live JSON schema validation and copy-to-clipboard actions.
 4. Rendered Markdown table preview with CSV download.
+
+| Validated JSON & Bounding Boxes | Rendered Tables View |
+| :---: | :---: |
+| ![Validated JSON View](docs/images/docuvision_studio_extracted.png) | ![Rendered Tables View](docs/images/docuvision_tables_view.png) |
+
+| Markdown Summary | Arithmetic Reconciliation |
+| :---: | :---: |
+| ![Markdown Summary View](docs/images/docuvision_summary_view.png) | ![Arithmetic Reconciliation View](docs/images/docuvision_audit_view.png) |
 
 ---
 

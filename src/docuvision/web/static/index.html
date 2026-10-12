@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocuVision - Zero-Cloud Multimodal Document Studio</title>
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card-bg: #12151f;
+      --card-border: #1e2433;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --code-bg: #0b0d14;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      font-size: 0.7rem;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      background: var(--card-border);
+      padding: 6px 14px;
+      border-radius: 6px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .status-dot.offline {
+      background-color: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 24px;
+      gap: 20px;
+    }
+
+    .toolbar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    select, input[type="file"], button {
+      background: var(--code-bg);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select:focus, button:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      transition: background 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: var(--card-border);
+      color: var(--text);
+      border: none;
+    }
+
+    .btn-secondary:hover {
+      background: #2a3347;
+    }
+
+    .workspace-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      min-height: 600px;
+    }
+
+    @media (max-width: 1024px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .panel-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+
+    .tab-btn.active {
+      background: var(--card-border);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .panel-body {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--card-border);
+      border-radius: 8px;
+      padding: 40px 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--accent);
+    }
+
+    .upload-zone svg {
+      width: 44px;
+      height: 44px;
+      fill: var(--text-muted);
+    }
+
+    .viewer-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .page-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .page-canvas-wrapper {
+      position: relative;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      overflow: hidden;
+      max-width: 100%;
+      background: #000;
+    }
+
+    .page-image {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .table-box-overlay {
+      position: absolute;
+      border: 2px solid #3b82f6;
+      background: rgba(59, 130, 246, 0.15);
+      pointer-events: none;
+    }
+
+    pre code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.825rem;
+      line-height: 1.5;
+      color: #38bdf8;
+    }
+
+    .reconciliation-card {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .reconciliation-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .badge-passed {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-failed {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+
+    table.data-table th, table.data-table td {
+      border: 1px solid var(--card-border);
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    table.data-table th {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-left-color: #fff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>DocuVision</span>
+      <span class="brand-badge">Zero Cloud</span>
+    </div>
+    <div class="status-badge" id="vlmStatusBadge">
+      <span class="status-dot" id="vlmStatusDot"></span>
+      <span id="vlmStatusText">Probing local VLM...</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="toolbar">
+      <div class="toolbar-group">
+        <label for="schemaSelect">Document Schema:</label>
+        <select id="schemaSelect">
+          <option value="invoice">Commercial Invoice</option>
+          <option value="receipt">Retail Receipt</option>
+          <option value="balance_sheet">Balance Sheet</option>
+          <option value="lab_report">Lab Diagnostic Report</option>
+          <option value="generic">Generic Key-Value</option>
+        </select>
+      </div>
+
+      <div class="toolbar-group">
+        <label for="vlmToggle">
+          <input type="checkbox" id="vlmToggle" checked> Use Local Vision Model
+        </label>
+      </div>
+
+      <div class="toolbar-group">
+        <label for="dpiSelect">Resolution:</label>
+        <select id="dpiSelect">
+          <option value="150">150 DPI (Fast)</option>
+          <option value="200" selected>200 DPI (Balanced)</option>
+          <option value="300">300 DPI (High Detail)</option>
+        </select>
+      </div>
+
+      <div class="toolbar-group">
+        <button class="btn-secondary" onclick="loadSampleDocument('invoice')">Demo Invoice</button>
+        <button class="btn-secondary" onclick="loadSampleDocument('balance_sheet')">Demo Balance Sheet</button>
+        <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.webp" style="display:none">
+        <button class="btn-secondary" onclick="document.getElementById('fileInput').click()">Select Document</button>
+        <button class="btn-primary" id="processBtn" disabled onclick="executeExtraction()">
+          <span id="btnSpinner" class="spinner" style="display:none"></span>
+          <span id="btnText">Extract Intelligence</span>
+        </button>
+      </div>
+    </section>
+
+    <div class="workspace-grid">
+      <!-- Left Panel: Document Visualizer -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>Visual Document View</span>
+            <span id="fileBadge" style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;"></span>
+          </div>
+          <div class="page-nav" id="pageNavControls" style="display:none">
+            <button class="btn-secondary" onclick="changePage(-1)">&larr;</button>
+            <span id="pageCounter" style="font-size:0.85rem">Page 1 of 1</span>
+            <button class="btn-secondary" onclick="changePage(1)">&rarr;</button>
+          </div>
+        </div>
+        <div class="panel-body" id="viewerBody">
+          <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+            <div style="font-weight:600">Drop PDF or Scan here, or browse</div>
+            <div style="font-size:0.8rem; color:var(--text-muted)">Supports multi-page PDFs, TIFF, JPG, and PNG</div>
+          </div>
+          <div class="viewer-container" id="canvasContainer" style="display:none">
+            <div class="page-canvas-wrapper" id="canvasWrapper">
+              <img id="activePageImg" class="page-image" alt="Rendered Document Page" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel: Extracted Intelligence -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('jsonTab')">Validated JSON</button>
+            <button class="tab-btn" onclick="switchTab('tableTab')">Tables</button>
+            <button class="tab-btn" onclick="switchTab('summaryTab')">Markdown Summary</button>
+            <button class="tab-btn" onclick="switchTab('metaTab')">Audit & Latency</button>
+          </div>
+          <div class="toolbar-group">
+            <button class="btn-secondary" onclick="copyCurrentOutput()">Copy</button>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <!-- JSON Tab -->
+          <div id="jsonTab" class="tab-content">
+            <pre><code id="jsonOutput">// Structured schema JSON will appear here after extraction</code></pre>
+          </div>
+
+          <!-- Table Tab -->
+          <div id="tableTab" class="tab-content" style="display:none">
+            <div id="tableContainer">
+              <p style="color:var(--text-muted); font-size:0.85rem">No tabular structures detected yet.</p>
+            </div>
+          </div>
+
+          <!-- Markdown Summary Tab -->
+          <div id="summaryTab" class="tab-content" style="display:none">
+            <pre><code id="markdownOutput"># Markdown summary will be compiled here</code></pre>
+          </div>
+
+          <!-- Audit Tab -->
+          <div id="metaTab" class="tab-content" style="display:none">
+            <div class="reconciliation-card">
+              <div class="reconciliation-header">
+                <strong>Arithmetic Validation</strong>
+                <span id="reconcileBadge" class="badge-passed">Not Checked</span>
+              </div>
+              <div id="reconcileDetails" style="font-size:0.85rem; color:var(--text-muted)">
+                Select an invoice or financial statement to run mathematical reconciliation.
+              </div>
+            </div>
+
+            <div class="reconciliation-card">
+              <div class="reconciliation-header">
+                <strong>Pipeline Telemetry</strong>
+              </div>
+              <div id="metaDetails" style="font-size:0.85rem; color:var(--text-muted)">
+                - Total Latency: 0 ms<br>
+                - Pages Processed: 0<br>
+                - Document SHA-256: -
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentFile = null;
+    let extractionResult = null;
+    let activePageIndex = 0;
+
+    async function probeVLMStatus() {
+      const badge = document.getElementById("vlmStatusBadge");
+      const dot = document.getElementById("vlmStatusDot");
+      const text = document.getElementById("vlmStatusText");
+
+      try {
+        const res = await fetch("/api/vlm/status");
+        const data = await res.json();
+        if (data.status === "online") {
+          dot.classList.remove("offline");
+          text.textContent = `${data.provider.toUpperCase()} (${data.current_model})`;
+        } else {
+          dot.classList.add("offline");
+          text.textContent = `${data.provider.toUpperCase()} (Offline)`;
+        }
+      } catch (err) {
+        dot.classList.add("offline");
+        text.textContent = "VLM Server Unreachable";
+      }
+    }
+
+    document.getElementById("fileInput").addEventListener("change", (e) => {
+      if (e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    const dropZone = document.getElementById("dropZone");
+    dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.style.borderColor = "var(--accent)"; });
+    dropZone.addEventListener("dragleave", () => { dropZone.style.borderColor = "var(--card-border)"; });
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = "var(--card-border)";
+      if (e.dataTransfer.files.length > 0) {
+        handleFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+
+    function handleFileSelection(file) {
+      currentFile = file;
+      document.getElementById("fileBadge").textContent = `(${file.name} - ${(file.size / 1024).toFixed(1)} KB)`;
+      document.getElementById("processBtn").disabled = false;
+    }
+
+    async function loadSampleDocument(type) {
+      try {
+        const res = await fetch(`/api/sample/${type}`);
+        if (!res.ok) throw new Error("Sample file not found");
+        const blob = await res.blob();
+        const file = new File([blob], `sample_${type}.pdf`, { type: "application/pdf" });
+        if (type === "balance_sheet") {
+          document.getElementById("schemaSelect").value = "balance_sheet";
+        } else {
+          document.getElementById("schemaSelect").value = "invoice";
+        }
+        handleFileSelection(file);
+        await executeExtraction();
+      } catch (err) {
+        alert("Failed to load demo document: " + err.message);
+      }
+    }
+
+    async function executeExtraction() {
+      if (!currentFile) return;
+
+      const btn = document.getElementById("processBtn");
+      const btnText = document.getElementById("btnText");
+      const spinner = document.getElementById("btnSpinner");
+
+      btn.disabled = true;
+      btnText.textContent = "Processing...";
+      spinner.style.display = "inline-block";
+
+      const formData = new FormData();
+      formData.append("file", currentFile);
+
+      const schema = document.getElementById("schemaSelect").value;
+      const useVlm = document.getElementById("vlmToggle").checked;
+      const dpi = document.getElementById("dpiSelect").value;
+
+      try {
+        const url = `/api/extract?schema_name=${encodeURIComponent(schema)}&use_vlm=${useVlm}&dpi=${dpi}`;
+        const resp = await fetch(url, { method: "POST", body: formData });
+        if (!resp.ok) {
+          throw new Error(`Server returned status ${resp.status}`);
+        }
+        extractionResult = await resp.json();
+        renderResult(extractionResult);
+      } catch (err) {
+        alert("Extraction failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = "Extract Intelligence";
+        spinner.style.display = "none";
+      }
+    }
+
+    function renderResult(res) {
+      // 1. JSON
+      document.getElementById("jsonOutput").textContent = JSON.stringify(res.structured_data, null, 2);
+
+      // 2. Summary
+      document.getElementById("markdownOutput").textContent = res.markdown_summary || "No summary generated.";
+
+      // 3. Document Pages
+      if (res.pages && res.pages.length > 0) {
+        activePageIndex = 0;
+        document.getElementById("dropZone").style.display = "none";
+        document.getElementById("canvasContainer").style.display = "flex";
+        document.getElementById("pageNavControls").style.display = "flex";
+        renderActivePage();
+      }
+
+      // 4. Tables Tab
+      const tableContainer = document.getElementById("tableContainer");
+      tableContainer.innerHTML = "";
+      if (res.tables && res.tables.length > 0) {
+        res.tables.forEach((t, i) => {
+          const title = document.createElement("h4");
+          title.style.margin = "12px 0 6px 0";
+          title.textContent = `Table ${i + 1} (Page ${t.page_number})`;
+          tableContainer.appendChild(title);
+
+          const tbl = document.createElement("table");
+          tbl.className = "data-table";
+
+          if (t.matrix && t.matrix.length > 0) {
+            const thead = document.createElement("thead");
+            const hrow = document.createElement("tr");
+            t.matrix[0].forEach(h => {
+              const th = document.createElement("th");
+              th.textContent = h;
+              hrow.appendChild(th);
+            });
+            thead.appendChild(hrow);
+            tbl.appendChild(thead);
+
+            const tbody = document.createElement("tbody");
+            t.matrix.slice(1).forEach(row => {
+              const tr = document.createElement("tr");
+              row.forEach(cell => {
+                const td = document.createElement("td");
+                td.textContent = cell;
+                tr.appendChild(td);
+              });
+              tbody.appendChild(tr);
+            });
+            tbl.appendChild(tbody);
+          }
+          tableContainer.appendChild(tbl);
+        });
+      } else {
+        tableContainer.innerHTML = "<p style='color:var(--text-muted); font-size:0.85rem'>No tables detected in this document.</p>";
+      }
+
+      // 5. Audit & Metrics
+      const recBadge = document.getElementById("reconcileBadge");
+      const recDetails = document.getElementById("reconcileDetails");
+      if (res.validation_passed) {
+        recBadge.className = "badge-passed";
+        recBadge.textContent = "PASSED";
+        recDetails.textContent = "All mathematical line items and aggregate totals verified consistently.";
+      } else {
+        recBadge.className = "badge-failed";
+        recBadge.textContent = "DISCREPANCIES";
+        recDetails.innerHTML = res.validation_errors.map(e => `&bull; ${e}`).join("<br>");
+      }
+
+      const metaDetails = document.getElementById("metaDetails");
+      metaDetails.innerHTML = `
+        - Latency: ${res.latency_ms} ms<br>
+        - Total Pages: ${res.metadata.total_pages}<br>
+        - File Size: ${(res.metadata.file_size_bytes / 1024).toFixed(1)} KB<br>
+        - SHA-256: <code>${res.metadata.sha256_hash}</code>
+      `;
+    }
+
+    function renderActivePage() {
+      if (!extractionResult || !extractionResult.pages) return;
+      const page = extractionResult.pages[activePageIndex];
+      const img = document.getElementById("activePageImg");
+      img.src = `data:image/png;base64,${page.image_base64}`;
+
+      document.getElementById("pageCounter").textContent = `Page ${activePageIndex + 1} of ${extractionResult.pages.length}`;
+
+      // Clear previous overlays
+      const wrapper = document.getElementById("canvasWrapper");
+      wrapper.querySelectorAll(".table-box-overlay").forEach(el => el.remove());
+
+      // Overlay bounding boxes for tables on this page
+      if (page.tables) {
+        page.tables.forEach(t => {
+          if (t.bbox) {
+            const box = document.createElement("div");
+            box.className = "table-box-overlay";
+            box.style.top = `${t.bbox.ymin * 100}%`;
+            box.style.left = `${t.bbox.xmin * 100}%`;
+            box.style.width = `${(t.bbox.xmax - t.bbox.xmin) * 100}%`;
+            box.style.height = `${(t.bbox.ymax - t.bbox.ymin) * 100}%`;
+            wrapper.appendChild(box);
+          }
+        });
+      }
+    }
+
+    function changePage(delta) {
+      if (!extractionResult || !extractionResult.pages) return;
+      const newIdx = activePageIndex + delta;
+      if (newIdx >= 0 && newIdx < extractionResult.pages.length) {
+        activePageIndex = newIdx;
+        renderActivePage();
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
+      document.getElementById(tabId).style.display = "block";
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
+    }
+
+    function copyCurrentOutput() {
+      const activeTab = document.querySelector(".tab-content:not([style*='display: none'])");
+      if (activeTab) {
+        const text = activeTab.innerText;
+        navigator.clipboard.writeText(text);
+        alert("Copied to clipboard!");
+      }
+    }
+
+    // Initialize VLM probe
+    probeVLMStatus();
+  </script>
+</body>
+</html>
