@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pymupdf
 from fastapi import Body, FastAPI, File, HTTPException, Query, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 
 from docuvision import __version__
 from docuvision.core.config import DocuVisionSettings, settings
@@ -17,7 +16,6 @@ from docuvision.core.models import DocumentResult
 from docuvision.core.schemas import delete_custom_schema, list_available_schemas, save_custom_schema
 from docuvision.pipeline.excel_exporter import ExcelExporter
 from docuvision.pipeline.orchestrator import DocumentPipeline
-from docuvision.privacy.redactor import PIIRedactor
 from docuvision.rasterizer.engine import PDFRasterizer
 from docuvision.table.extractor import TableExtractor
 from docuvision.vlm.client import VLMClient
@@ -199,7 +197,28 @@ async def extract_document(
         filename=file.filename,
         redact_pii=redact_pii,
     )
+
+    try:
+        from docuvision.search.index import DocumentSearchIndex
+
+        DocumentSearchIndex().index_document(result)
+    except Exception:
+        pass
+
     return result
+
+
+@app.get("/api/search")
+async def search_endpoint(
+    q: str = Query(..., min_length=1, description="Search query string"),
+    limit: int = Query(default=20, ge=1, le=100),
+) -> List[Dict[str, Any]]:
+    """Query indexed documents and OCR text across the local SQLite FTS5 database."""
+    from docuvision.search.index import DocumentSearchIndex
+
+    index = DocumentSearchIndex()
+    hits = index.search(q, limit=limit)
+    return [hit.model_dump() for hit in hits]
 
 
 @app.post("/api/export/excel")

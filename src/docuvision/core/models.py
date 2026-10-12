@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import io
 from typing import Any, List, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -146,7 +147,9 @@ class DocumentPage(BaseModel):
     dpi: int = Field(default=200, description="Rasterization resolution")
     text_content: str = Field(default="", description="Extracted raw text")
     tables: List[Table] = Field(default_factory=list, description="Detected tables on this page")
-    image_base64: Optional[str] = Field(default=None, description="Base64-encoded PNG image for VLM consumption")
+    image_base64: Optional[str] = Field(
+        default=None, description="Base64-encoded PNG image for VLM consumption"
+    )
     image_path: Optional[str] = Field(default=None, description="Optional path to cached page image")
     char_count: int = Field(default=0, ge=0, description="Character count")
     word_count: int = Field(default=0, ge=0, description="Word count")
@@ -173,7 +176,13 @@ class DocumentResult(BaseModel):
     structured_data: dict[str, Any] = Field(default_factory=dict, description="Validated schema JSON payload")
     schema_name: str = Field(default="generic", description="Target extraction schema applied")
     validation_passed: bool = Field(default=True, description="Schema and arithmetic validation status")
-    validation_errors: List[str] = Field(default_factory=list, description="List of schema or math discrepancy warnings")
+    validation_errors: List[str] = Field(
+        default_factory=list, description="List of schema or math discrepancy warnings"
+    )
     markdown_summary: str = Field(default="", description="Human-readable markdown summary")
-    vlm_metrics: dict[str, Any] = Field(default_factory=dict, description="Inference token count and provider stats")
-    latency_ms: float = Field(default=0.0, ge=0.0, description="Total pipeline processing latency in milliseconds")
+    vlm_metrics: dict[str, Any] = Field(
+        default_factory=dict, description="Inference token count and provider stats"
+    )
+    latency_ms: float = Field(
+        default=0.0, ge=0.0, description="Total pipeline processing latency in milliseconds"
+    )

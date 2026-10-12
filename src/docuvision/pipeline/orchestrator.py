@@ -5,16 +5,18 @@ from __future__ import annotations
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, Union
+
 from pydantic import BaseModel
 
-from docuvision.core.config import DocuVisionSettings, settings as default_settings
+from docuvision.core.config import DocuVisionSettings
+from docuvision.core.config import settings as default_settings
 from docuvision.core.models import DocumentPage, DocumentResult, Table
 from docuvision.core.schemas import get_schema_class
+from docuvision.privacy.redactor import PIIRedactor
 from docuvision.rasterizer.engine import PDFRasterizer
 from docuvision.table.extractor import TableExtractor
 from docuvision.table.reconciler import TableReconciler
 from docuvision.table.stitcher import MultiPageTableStitcher
-from docuvision.privacy.redactor import PIIRedactor
 from docuvision.vlm.client import VLMClient
 from docuvision.vlm.parser import VLMParser
 from docuvision.vlm.prompt import PromptBuilder
@@ -95,33 +97,62 @@ class DocumentPipeline:
         all_text = "\n".join(p.text_content for p in pages)
 
         # Basic invoice / receipt heuristic mapping from tables
-        if schema_cls.__name__ in ("InvoiceSchema", "ReceiptSchema") and tables:
-            first_tab = tables[0]
+        if schema_cls.__name__ in ("InvoiceSchema", "ReceiptSchema"):
+            if "invoice" in all_text.lower():
+                import re
+
+                inv_match = re.search(r"(?:INV|INVOICE)[-\s#:]*([A-Za-z0-9-]+)", all_text, re.IGNORECASE)
+                if inv_match:
+                    data["invoice_number"] = inv_match.group(1)
+
+            if tables:
+                first_tab = tables[0]
             records = first_tab.to_dict_records()
             items = []
             for r in records:
                 # Find description, qty, price columns
-                desc = next((v for k, v in r.items() if any(w in k.lower() for w in ["item", "desc", "particular", "name"])), None)
-                qty = next((v for k, v in r.items() if any(w in k.lower() for w in ["qty", "quant", "count"])), "1.0")
-                price = next((v for k, v in r.items() if any(w in k.lower() for w in ["price", "rate", "cost"])), "0.0")
-                total = next((v for k, v in r.items() if any(w in k.lower() for w in ["total", "amount", "net"])), "0.0")
+                desc = next(
+                    (
+                        v
+                        for k, v in r.items()
+                        if any(w in k.lower() for w in ["item", "desc", "particular", "name"])
+                    ),
+                    None,
+                )
+                qty = next(
+                    (v for k, v in r.items() if any(w in k.lower() for w in ["qty", "quant", "count"])), "1.0"
+                )
+                price = next(
+                    (v for k, v in r.items() if any(w in k.lower() for w in ["price", "rate", "cost"])), "0.0"
+                )
+                total = next(
+                    (v for k, v in r.items() if any(w in k.lower() for w in ["total", "amount", "net"])),
+                    "0.0",
+                )
 
                 if desc:
-                    items.append({
-                        "description": desc,
-                        "quantity": self.table_extractor._parse_numeric(qty) or 1.0,
-                        "unit_price": self.table_extractor._parse_numeric(price) or 0.0,
-                        "total_price": self.table_extractor._parse_numeric(total) or 0.0,
-                    })
+                    items.append(
+                        {
+                            "description": desc,
+                            "quantity": self.table_extractor._parse_numeric(qty) or 1.0,
+                            "unit_price": self.table_extractor._parse_numeric(price) or 0.0,
+                            "total_price": self.table_extractor._parse_numeric(total) or 0.0,
+                        }
+                    )
             if items:
                 if schema_cls.__name__ == "InvoiceSchema":
                     data["line_items"] = items
                 else:
-                    data["items"] = [{"name": it["description"], "quantity": it["quantity"], "price": it["total_price"]} for it in items]
+                    data["items"] = [
+                        {"name": it["description"], "quantity": it["quantity"], "price": it["total_price"]}
+                        for it in items
+                    ]
 
         # Populate generic schema fallback
         if schema_cls.__name__ == "GenericKeyValueSchema":
-            data["document_title"] = pages[0].text_content.splitlines()[0][:80] if pages and pages[0].text_content else "Document"
+            data["document_title"] = (
+                pages[0].text_content.splitlines()[0][:80] if pages and pages[0].text_content else "Document"
+            )
             data["summary"] = f"Processed {len(pages)} page(s) containing {len(tables)} table(s)."
 
         return data

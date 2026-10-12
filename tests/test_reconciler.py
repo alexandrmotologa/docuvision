@@ -23,7 +23,12 @@ def test_reconcile_invalid_line_item_math():
     reconciler = TableReconciler(tolerance=0.05)
     data = {
         "line_items": [
-            {"description": "SSD Drive", "quantity": 2, "unit_price": 45.0, "total_price": 120.0},  # Math error: 2 * 45 != 120
+            {
+                "description": "SSD Drive",
+                "quantity": 2,
+                "unit_price": 45.0,
+                "total_price": 120.0,
+            },  # Math error: 2 * 45 != 120
         ],
         "subtotal": 120.0,
     }

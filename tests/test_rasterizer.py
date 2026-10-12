@@ -1,7 +1,9 @@
 """Tests for PDF rasterization and image preprocessor."""
 
 from pathlib import Path
+
 from PIL import Image
+
 from docuvision.rasterizer.engine import PDFRasterizer
 from docuvision.rasterizer.preprocessor import ImagePreprocessor
 

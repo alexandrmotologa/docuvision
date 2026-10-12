@@ -7,10 +7,12 @@ import csv
 import json
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Callable, List, Optional, Set
+
 from pydantic import BaseModel, Field
 
-from docuvision.core.config import DocuVisionSettings, settings as default_settings
+from docuvision.core.config import DocuVisionSettings
+from docuvision.core.config import settings as default_settings
 from docuvision.core.models import DocumentResult
 from docuvision.pipeline.excel_exporter import ExcelExporter
 from docuvision.pipeline.orchestrator import DocumentPipeline
@@ -62,7 +64,8 @@ class BatchProcessor:
         """Scan directory for supported document files."""
         pattern = "**/*" if recursive else "*"
         all_candidates = [
-            p for p in input_dir.glob(pattern)
+            p
+            for p in input_dir.glob(pattern)
             if p.is_file() and p.suffix.lower() in self.SUPPORTED_EXTENSIONS
         ]
         return sorted(all_candidates, key=lambda x: x.name)
@@ -77,6 +80,7 @@ class BatchProcessor:
         concurrency: int = 4,
         export_formats: Optional[List[str]] = None,
         progress_callback: Optional[Callable[[int, int, str], None]] = None,
+        index_search: bool = True,
     ) -> BatchResult:
         """Run concurrent document extraction across a folder of documents."""
         start_time = time.perf_counter()
@@ -125,7 +129,17 @@ class BatchProcessor:
                             destination=output_dir / f"{stem}.xlsx",
                         )
 
-                    total_amount = result.structured_data.get("total_amount") or result.structured_data.get("total")
+                    if index_search:
+                        try:
+                            from docuvision.search.index import DocumentSearchIndex
+
+                            DocumentSearchIndex().index_document(result)
+                        except Exception:
+                            pass
+
+                    total_amount = result.structured_data.get("total_amount") or result.structured_data.get(
+                        "total"
+                    )
                     doc_date = (
                         result.structured_data.get("invoice_date")
                         or result.structured_data.get("transaction_date")
@@ -163,31 +177,35 @@ class BatchProcessor:
         csv_file = output_dir / "batch_summary.csv"
         with open(csv_file, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow([
-                "Filename",
-                "Pages",
-                "Size_KB",
-                "SHA256_Prefix",
-                "Schema",
-                "Validation_Passed",
-                "Discrepancies",
-                "Latency_ms",
-                "Total_Amount",
-                "Document_Date",
-            ])
+            writer.writerow(
+                [
+                    "Filename",
+                    "Pages",
+                    "Size_KB",
+                    "SHA256_Prefix",
+                    "Schema",
+                    "Validation_Passed",
+                    "Discrepancies",
+                    "Latency_ms",
+                    "Total_Amount",
+                    "Document_Date",
+                ]
+            )
             for it in items:
-                writer.writerow([
-                    it.filename,
-                    it.total_pages,
-                    it.file_size_kb,
-                    it.sha256_hash,
-                    it.schema_name,
-                    it.validation_passed,
-                    it.discrepancy_count,
-                    it.latency_ms,
-                    it.total_amount if it.total_amount is not None else "",
-                    it.document_date or "",
-                ])
+                writer.writerow(
+                    [
+                        it.filename,
+                        it.total_pages,
+                        it.file_size_kb,
+                        it.sha256_hash,
+                        it.schema_name,
+                        it.validation_passed,
+                        it.discrepancy_count,
+                        it.latency_ms,
+                        it.total_amount if it.total_amount is not None else "",
+                        it.document_date or "",
+                    ]
+                )
 
         # Generate aggregated batch_summary.json
         json_file = output_dir / "batch_summary.json"

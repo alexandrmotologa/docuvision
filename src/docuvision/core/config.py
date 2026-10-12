@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Literal, Optional
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -93,7 +94,9 @@ class DocuVisionSettings(BaseSettings):
     # Server & Storage Settings
     server_host: str = Field(default="127.0.0.1", description="FastAPI Web Studio binding host")
     server_port: int = Field(default=8000, description="FastAPI Web Studio binding port")
-    output_dir: Path = Field(default=Path("./outputs"), description="Directory to store extracted JSON, tables, and images")
+    output_dir: Path = Field(
+        default=Path("./outputs"), description="Directory to store extracted JSON, tables, and images"
+    )
     temp_dir: Path = Field(default=Path("./temp"), description="Temporary workspace directory")
 
     def get_chat_endpoint(self) -> str:

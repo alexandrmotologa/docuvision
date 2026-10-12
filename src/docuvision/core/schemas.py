@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
+
 from pydantic import BaseModel, Field
 
 
@@ -38,7 +39,9 @@ class InvoiceSchema(BaseModel):
     tax_amount: Optional[float] = Field(default=None, description="Total sales or VAT tax applied")
     total_amount: Optional[float] = Field(default=None, description="Grand total payable")
     currency: str = Field(default="USD", description="Currency symbol or 3-letter ISO code")
-    payment_terms: Optional[str] = Field(default=None, description="Payment terms (e.g. Net 30, Due on Receipt)")
+    payment_terms: Optional[str] = Field(
+        default=None, description="Payment terms (e.g. Net 30, Due on Receipt)"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -88,23 +91,37 @@ class BalanceSheetSchema(BaseModel):
     currency: str = Field(default="USD", description="Reporting currency")
     scale: str = Field(default="exact", description="Unit scale: 'exact', 'thousands', 'millions'")
 
-    current_assets: List[FinancialEntry] = Field(default_factory=list, description="Cash, receivables, inventory")
+    current_assets: List[FinancialEntry] = Field(
+        default_factory=list, description="Cash, receivables, inventory"
+    )
     total_current_assets: Optional[float] = Field(default=None, description="Sum of current assets")
 
-    non_current_assets: List[FinancialEntry] = Field(default_factory=list, description="PP&E, goodwill, intangibles")
+    non_current_assets: List[FinancialEntry] = Field(
+        default_factory=list, description="PP&E, goodwill, intangibles"
+    )
     total_non_current_assets: Optional[float] = Field(default=None, description="Sum of non-current assets")
     total_assets: Optional[float] = Field(default=None, description="Grand total assets")
 
-    current_liabilities: List[FinancialEntry] = Field(default_factory=list, description="Accounts payable, short-term debt")
+    current_liabilities: List[FinancialEntry] = Field(
+        default_factory=list, description="Accounts payable, short-term debt"
+    )
     total_current_liabilities: Optional[float] = Field(default=None, description="Sum of current liabilities")
 
-    long_term_liabilities: List[FinancialEntry] = Field(default_factory=list, description="Bonds, long-term lease obligations")
-    total_long_term_liabilities: Optional[float] = Field(default=None, description="Sum of long-term liabilities")
+    long_term_liabilities: List[FinancialEntry] = Field(
+        default_factory=list, description="Bonds, long-term lease obligations"
+    )
+    total_long_term_liabilities: Optional[float] = Field(
+        default=None, description="Sum of long-term liabilities"
+    )
     total_liabilities: Optional[float] = Field(default=None, description="Grand total liabilities")
 
-    stockholders_equity: List[FinancialEntry] = Field(default_factory=list, description="Retained earnings, common stock")
+    stockholders_equity: List[FinancialEntry] = Field(
+        default_factory=list, description="Retained earnings, common stock"
+    )
     total_equity: Optional[float] = Field(default=None, description="Total shareholders equity")
-    total_liabilities_and_equity: Optional[float] = Field(default=None, description="Total liabilities plus equity")
+    total_liabilities_and_equity: Optional[float] = Field(
+        default=None, description="Total liabilities plus equity"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -117,7 +134,9 @@ class LabTestResult(BaseModel):
     result_value: str = Field(..., description="Observed quantitative or qualitative result")
     units: Optional[str] = Field(default=None, description="Measurement units (e.g. 'mg/dL', 'mmol/L')")
     reference_range: Optional[str] = Field(default=None, description="Normal biological reference range")
-    flag: Optional[str] = Field(default=None, description="Abnormal indicator: 'Normal', 'High', 'Low', 'Critical'")
+    flag: Optional[str] = Field(
+        default=None, description="Abnormal indicator: 'Normal', 'High', 'Low', 'Critical'"
+    )
 
 
 class LabReportSchema(BaseModel):
@@ -130,7 +149,9 @@ class LabReportSchema(BaseModel):
     laboratory_name: Optional[str] = Field(default=None, description="Diagnostic facility name")
     ordering_physician: Optional[str] = Field(default=None, description="Physician who ordered testing")
     tests: List[LabTestResult] = Field(default_factory=list, description="Array of test results")
-    clinical_notes: Optional[str] = Field(default=None, description="Pathologist comments or diagnostic impressions")
+    clinical_notes: Optional[str] = Field(
+        default=None, description="Pathologist comments or diagnostic impressions"
+    )
 
 
 # ---------------------------------------------------------------------------

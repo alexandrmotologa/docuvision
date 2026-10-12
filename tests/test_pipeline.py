@@ -1,6 +1,7 @@
 """Tests for end-to-end document processing pipeline."""
 
 from pathlib import Path
+
 from docuvision.pipeline.orchestrator import DocumentPipeline
 
 

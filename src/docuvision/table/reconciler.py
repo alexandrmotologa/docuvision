@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 from docuvision.core.models import Table
@@ -12,10 +13,16 @@ class ReconciliationReport(BaseModel):
     """Result of cross-validating extracted line items against aggregate schema figures."""
 
     passed: bool = Field(default=True, description="True if no arithmetic discrepancy was detected")
-    discrepancies: List[str] = Field(default_factory=list, description="Specific arithmetic deviation warnings")
+    discrepancies: List[str] = Field(
+        default_factory=list, description="Specific arithmetic deviation warnings"
+    )
     computed_sum: float = Field(default=0.0, description="Sum calculated from item rows")
-    reported_total: Optional[float] = Field(default=None, description="Reported total or subtotal from document")
-    margin_error: float = Field(default=0.0, description="Absolute difference between computed and reported amounts")
+    reported_total: Optional[float] = Field(
+        default=None, description="Reported total or subtotal from document"
+    )
+    margin_error: float = Field(
+        default=0.0, description="Absolute difference between computed and reported amounts"
+    )
 
 
 class TableReconciler:
@@ -38,7 +45,7 @@ class TableReconciler:
             if not isinstance(item, dict):
                 continue
 
-            desc = item.get("description", f"Item #{idx+1}")
+            desc = item.get("description", f"Item #{idx + 1}")
             qty = float(item.get("quantity") or 1.0)
             unit_price = float(item.get("unit_price") or 0.0)
             total_price = float(item.get("total_price") or 0.0)

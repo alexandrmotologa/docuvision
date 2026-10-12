@@ -11,12 +11,12 @@ from docuvision.core.models import (
     TableCell,
 )
 from docuvision.core.schemas import (
+    SCHEMA_REGISTRY,
     BalanceSheetSchema,
     GenericKeyValueSchema,
     InvoiceSchema,
     LabReportSchema,
     ReceiptSchema,
-    SCHEMA_REGISTRY,
     get_schema_class,
     list_available_schemas,
 )

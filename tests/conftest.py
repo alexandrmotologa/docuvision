@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 from pathlib import Path
+
 import pymupdf
 import pytest
 
@@ -45,7 +46,9 @@ def create_sample_invoice_pdf() -> bytes:
 
     # Draw vertical grid lines
     for x in col_x[1:-1]:
-        page.draw_line(pymupdf.Point(x, table_top), pymupdf.Point(x, table_bottom), color=(0.7, 0.7, 0.7), width=0.5)
+        page.draw_line(
+            pymupdf.Point(x, table_top), pymupdf.Point(x, table_bottom), color=(0.7, 0.7, 0.7), width=0.5
+        )
 
     # Header Row
     headers = ["Description", "Quantity", "Unit Price", "Total Price"]

@@ -1,5 +1,9 @@
 # DocuVision
 
+[![CI](https://github.com/alexandrmotologa/docuvision/actions/workflows/ci.yml/badge.svg)](https://github.com/alexandrmotologa/docuvision/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue)](pyproject.toml)
+
 Zero-cloud, high-fidelity multimodal document intelligence and structured schema extraction pipeline powered by local Vision-Language Models.
 
 DocuVision converts multi-page PDFs, scans, receipts, invoices, and complex balance sheets into validated JSON and Markdown tables without sending a single byte of sensitive document data to external cloud APIs.
@@ -52,11 +56,12 @@ DocuVision converts multi-page PDFs, scans, receipts, invoices, and complex bala
 - **Dual-mode table extractor & stitcher**: Combines deterministic vector grid parsing with vision-assisted structural inference, plus automatic multi-page table continuity merging.
 - **Multi-sheet Excel export**: Compiles extraction results into styled `.xlsx` workbooks across Overview, Extracted Tables, and Audit sheets with openpyxl.
 - **Batch processing engine**: Concurrently processes directories of documents (`docuvision batch`) generating consolidated CSV and JSON summaries.
+- **Full-text search (SQLite FTS5)**: Fast local search index (`docuvision search`) querying OCR text, tables, and JSON schema fields across document archives.
 - **Privacy & PII redaction**: Automatically masks credit cards, SSN, and sensitive taxpayer codes directly on the document canvas before extraction.
 - **Custom schema designer**: Interactively design, register, and persist user-defined schemas without writing Python code.
 - **Arithmetic reconciliation**: Verifies line item totals, tax calculations, and subtotal consistency against extracted aggregate figures.
 - **Interactive Web Studio**: Built-in FastAPI interface providing split-screen document preview, interactive bounding boxes, zoom and pan canvas, and live JSON inspector.
-- **Rich terminal CLI**: Built with Typer and Rich, supporting batch processing, model diagnostics, and table previews directly in the console.
+- **Rich terminal CLI**: Built with Typer and Rich, supporting batch processing, model diagnostics, search, and table previews directly in the console.
 
 ---
 
@@ -99,6 +104,9 @@ docuvision extract sample_invoice.pdf --schema invoice --format excel --output i
 # Concurrently process an entire folder of scans
 docuvision batch ./scans/ --schema invoice --output-dir ./outputs/batch --workers 4 --format all
 
+# Search across processed documents and OCR text using SQLite FTS5
+docuvision search "Acme Corp"
+
 # Extract all detected tables to Markdown
 docuvision tables financial_report.pdf --format markdown
 
@@ -108,6 +116,19 @@ docuvision rasterize document.pdf --dpi 300 --out-dir ./pages
 # Launch the interactive Web Studio
 docuvision serve --port 8000
 ```
+
+For complete documentation on all flags and options, see [docs/CLI_REFERENCE.md](docs/CLI_REFERENCE.md).
+
+### Docker Deployment
+
+Run DocuVision Studio and local Ollama services in isolated containers:
+
+```bash
+# Build and launch DocuVision Studio
+docker compose up --build
+```
+
+Access the studio at `http://localhost:8000`.
 
 ---
 

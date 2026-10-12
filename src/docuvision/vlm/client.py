@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any, Dict, List, Optional
+
 import httpx
 
-from docuvision.core.config import DocuVisionSettings, settings as default_settings
+from docuvision.core.config import DocuVisionSettings
+from docuvision.core.config import settings as default_settings
 
 
 class VLMClient:
@@ -97,9 +99,7 @@ class VLMClient:
                             {"type": "text", "text": prompt},
                             {
                                 "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/png;base64,{image_base64}"
-                                },
+                                "image_url": {"url": f"data:image/png;base64,{image_base64}"},
                             },
                         ],
                     }
@@ -115,9 +115,7 @@ class VLMClient:
                 async with httpx.AsyncClient(timeout=self.settings.vlm_timeout_seconds) as client:
                     resp = await client.post(endpoint, json=payload, headers=headers)
                     if resp.status_code != 200:
-                        raise RuntimeError(
-                            f"VLM Server error (HTTP {resp.status_code}): {resp.text[:300]}"
-                        )
+                        raise RuntimeError(f"VLM Server error (HTTP {resp.status_code}): {resp.text[:300]}")
 
                     data = resp.json()
                     if self.settings.vlm_provider == "ollama":

@@ -2,6 +2,7 @@
 
 import io
 from pathlib import Path
+
 import openpyxl
 
 from docuvision.core.models import DocumentMetadata, DocumentResult, Table, TableCell

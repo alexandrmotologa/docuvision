@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 from typing import Tuple
+
 from PIL import Image, ImageEnhance, ImageOps
 
 

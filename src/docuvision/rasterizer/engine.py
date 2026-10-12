@@ -12,7 +12,8 @@ from typing import Generator, List, Optional, Union
 import pymupdf
 from PIL import Image
 
-from docuvision.core.config import DocuVisionSettings, settings as default_settings
+from docuvision.core.config import DocuVisionSettings
+from docuvision.core.config import settings as default_settings
 from docuvision.core.models import DocumentMetadata, DocumentPage
 from docuvision.rasterizer.preprocessor import ImagePreprocessor
 
@@ -52,7 +53,9 @@ class PDFRasterizer:
         size_bytes = len(file_bytes)
 
         # Probe page count via PyMuPDF
-        with pymupdf.open(stream=file_bytes, filetype="pdf" if name.lower().endswith(".pdf") else None) as doc:
+        with pymupdf.open(
+            stream=file_bytes, filetype="pdf" if name.lower().endswith(".pdf") else None
+        ) as doc:
             total_pages = max(1, len(doc))
 
         mime_type = "application/pdf" if name.lower().endswith(".pdf") else "image/png"

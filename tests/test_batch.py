@@ -1,7 +1,9 @@
 """Tests for batch processing pipeline."""
 
 from pathlib import Path
+
 import pytest
+
 from docuvision.pipeline.batch import BatchProcessor
 
 

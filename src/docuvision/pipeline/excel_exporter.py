@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import io
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Union
+
 import openpyxl
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
-from docuvision.core.models import DocumentResult, Table
+from docuvision.core.models import DocumentResult
 
 
 class ExcelExporter:
@@ -109,7 +110,11 @@ class ExcelExporter:
         current_row = 1
         if result.tables:
             for t_idx, tab in enumerate(result.tables):
-                ws_tables.cell(row=current_row, column=1, value=f"Table {t_idx + 1} (Page {tab.page_number} - {tab.rows} Rows x {tab.cols} Cols)").font = self.font_section
+                ws_tables.cell(
+                    row=current_row,
+                    column=1,
+                    value=f"Table {t_idx + 1} (Page {tab.page_number} - {tab.rows} Rows x {tab.cols} Cols)",
+                ).font = self.font_section
                 current_row += 1
 
                 for r_idx, row in enumerate(tab.matrix):
@@ -143,7 +148,11 @@ class ExcelExporter:
         ws_audit["A1"].font = self.font_title
 
         status_cell = ws_audit["A3"]
-        status_cell.value = "PASSED: All line items and totals validated consistently" if result.validation_passed else "WARNINGS: Discrepancies detected"
+        status_cell.value = (
+            "PASSED: All line items and totals validated consistently"
+            if result.validation_passed
+            else "WARNINGS: Discrepancies detected"
+        )
         status_cell.font = self.font_bold
         status_cell.fill = self.fill_passed if result.validation_passed else self.fill_failed
         status_cell.alignment = Alignment(horizontal="left", vertical="center")

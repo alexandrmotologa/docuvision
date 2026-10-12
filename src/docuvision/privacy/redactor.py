@@ -6,8 +6,9 @@ import io
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-from PIL import Image, ImageDraw
+
 import pymupdf
+from PIL import Image, ImageDraw
 
 from docuvision.core.models import BoundingBox
 
@@ -38,13 +39,15 @@ class PIIRedactor:
                 else:
                     masked = "****"
 
-                matches.append({
-                    "category": cat_name,
-                    "raw_match": raw_val,
-                    "masked_preview": masked,
-                    "start": m.start(),
-                    "end": m.end(),
-                })
+                matches.append(
+                    {
+                        "category": cat_name,
+                        "raw_match": raw_val,
+                        "masked_preview": masked,
+                        "start": m.start(),
+                        "end": m.end(),
+                    }
+                )
         return matches
 
     def redact_pdf(

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 from typing import Any, Dict, List, Tuple, Type
+
 from pydantic import BaseModel, ValidationError
 
 
@@ -66,7 +67,9 @@ class VLMParser:
         try:
             return json.loads(repaired)
         except json.JSONDecodeError as err:
-            raise ValueError(f"Failed to parse VLM response into valid JSON: {err}. Raw output was: {raw_text[:200]}") from err
+            raise ValueError(
+                f"Failed to parse VLM response into valid JSON: {err}. Raw output was: {raw_text[:200]}"
+            ) from err
 
     def parse_and_validate(
         self,

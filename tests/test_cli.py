@@ -1,7 +1,9 @@
 """Tests for Typer CLI commands."""
 
 from pathlib import Path
+
 from typer.testing import CliRunner
+
 from docuvision.cli import app
 
 runner = CliRunner()
@@ -28,7 +30,9 @@ def test_cli_check():
 
 def test_cli_rasterize(sample_invoice_pdf: Path, tmp_path: Path):
     out_dir = tmp_path / "cli_pages"
-    res = runner.invoke(app, ["rasterize", str(sample_invoice_pdf), "--out-dir", str(out_dir), "--dpi", "150"])
+    res = runner.invoke(
+        app, ["rasterize", str(sample_invoice_pdf), "--out-dir", str(out_dir), "--dpi", "150"]
+    )
     assert res.exit_code == 0
     assert "Rendered" in res.output
     assert out_dir.exists()
@@ -42,31 +46,46 @@ def test_cli_tables(sample_invoice_pdf: Path):
 
 def test_cli_extract_no_vlm(sample_invoice_pdf: Path, tmp_path: Path):
     out_file = tmp_path / "result.json"
-    res = runner.invoke(app, [
-        "extract",
-        str(sample_invoice_pdf),
-        "--schema", "invoice",
-        "--no-vlm",
-        "--dpi", "150",
-        "--output", str(out_file),
-    ])
+    res = runner.invoke(
+        app,
+        [
+            "extract",
+            str(sample_invoice_pdf),
+            "--schema",
+            "invoice",
+            "--no-vlm",
+            "--dpi",
+            "150",
+            "--output",
+            str(out_file),
+        ],
+    )
     assert res.exit_code == 0
     assert out_file.exists()
-    assert "INV" in out_file.read_text(encoding="utf-8") or "line_items" in out_file.read_text(encoding="utf-8")
+    assert "INV" in out_file.read_text(encoding="utf-8") or "line_items" in out_file.read_text(
+        encoding="utf-8"
+    )
 
 
 def test_cli_extract_excel(sample_invoice_pdf: Path, tmp_path: Path):
     out_excel = tmp_path / "report.xlsx"
-    res = runner.invoke(app, [
-        "extract",
-        str(sample_invoice_pdf),
-        "--schema", "invoice",
-        "--no-vlm",
-        "--dpi", "150",
-        "--format", "excel",
-        "--output", str(out_excel),
-        "--redact-pii",
-    ])
+    res = runner.invoke(
+        app,
+        [
+            "extract",
+            str(sample_invoice_pdf),
+            "--schema",
+            "invoice",
+            "--no-vlm",
+            "--dpi",
+            "150",
+            "--format",
+            "excel",
+            "--output",
+            str(out_excel),
+            "--redact-pii",
+        ],
+    )
     assert res.exit_code == 0
     assert out_excel.exists()
     assert out_excel.stat().st_size > 1000
@@ -74,14 +93,39 @@ def test_cli_extract_excel(sample_invoice_pdf: Path, tmp_path: Path):
 
 def test_cli_batch(tmp_path: Path):
     batch_out = tmp_path / "batch_cli_out"
-    res = runner.invoke(app, [
-        "batch",
-        "examples",
-        "--output-dir", str(batch_out),
-        "--no-vlm",
-        "--dpi", "150",
-        "--format", "json",
-    ])
+    res = runner.invoke(
+        app,
+        [
+            "batch",
+            "examples",
+            "--output-dir",
+            str(batch_out),
+            "--no-vlm",
+            "--dpi",
+            "150",
+            "--format",
+            "json",
+        ],
+    )
     assert res.exit_code == 0
     assert (batch_out / "batch_summary.csv").exists()
 
+
+def test_cli_search(sample_invoice_pdf: Path, tmp_path: Path):
+    # Extract to index document
+    runner.invoke(
+        app,
+        [
+            "extract",
+            str(sample_invoice_pdf),
+            "--schema",
+            "invoice",
+            "--no-vlm",
+            "--dpi",
+            "150",
+        ],
+    )
+
+    res = runner.invoke(app, ["search", "invoice"])
+    assert res.exit_code == 0
+    assert "Search Results" in res.output or "match" in res.output

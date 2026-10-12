@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Optional, Type
+from typing import Optional, Type
+
 from pydantic import BaseModel
 
 
@@ -48,29 +49,37 @@ class PromptBuilder:
         if ocr_hint and ocr_hint.strip():
             # Include snippet of OCR text to disambiguate blurred characters
             trimmed_ocr = ocr_hint.strip()[:1500]
-            parts.extend([
-                "",
-                "DETECTED TEXT HINTS FROM DOCUMENT:",
-                trimmed_ocr,
-            ])
+            parts.extend(
+                [
+                    "",
+                    "DETECTED TEXT HINTS FROM DOCUMENT:",
+                    trimmed_ocr,
+                ]
+            )
 
         if table_markdown_hints and table_markdown_hints.strip():
-            parts.extend([
-                "",
-                "PRE-DETECTED TABLE STRUCTURES:",
-                table_markdown_hints.strip(),
-            ])
+            parts.extend(
+                [
+                    "",
+                    "PRE-DETECTED TABLE STRUCTURES:",
+                    table_markdown_hints.strip(),
+                ]
+            )
 
         if custom_instructions and custom_instructions.strip():
-            parts.extend([
-                "",
-                "ADDITIONAL USER DIRECTIVES:",
-                custom_instructions.strip(),
-            ])
+            parts.extend(
+                [
+                    "",
+                    "ADDITIONAL USER DIRECTIVES:",
+                    custom_instructions.strip(),
+                ]
+            )
 
-        parts.extend([
-            "",
-            "OUTPUT (Valid JSON only):",
-        ])
+        parts.extend(
+            [
+                "",
+                "OUTPUT (Valid JSON only):",
+            ]
+        )
 
         return "\n".join(parts)

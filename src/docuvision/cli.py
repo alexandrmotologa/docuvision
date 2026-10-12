@@ -17,7 +17,7 @@ from rich.table import Table as RichTable
 
 from docuvision import __version__
 from docuvision.core.config import settings
-from docuvision.core.schemas import list_available_schemas, save_custom_schema
+from docuvision.core.schemas import list_available_schemas
 from docuvision.pipeline.batch import BatchProcessor
 from docuvision.pipeline.excel_exporter import ExcelExporter
 from docuvision.pipeline.orchestrator import DocumentPipeline
@@ -36,15 +36,30 @@ console = Console(legacy_windows=False)
 @app.command()
 def extract(
     file_path: Path = typer.Argument(..., exists=True, readable=True, help="Path to PDF or scan image"),
-    schema: str = typer.Option("generic", "--schema", "-s", help="Target schema: invoice, receipt, balance_sheet, lab_report, generic, or custom"),
-    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Optional path to save extraction output"),
-    output_format: str = typer.Option("json", "--format", "-f", help="Output format: json, markdown, excel, or both"),
+    schema: str = typer.Option(
+        "generic",
+        "--schema",
+        "-s",
+        help="Target schema: invoice, receipt, balance_sheet, lab_report, generic, or custom",
+    ),
+    output: Optional[Path] = typer.Option(
+        None, "--output", "-o", help="Optional path to save extraction output"
+    ),
+    output_format: str = typer.Option(
+        "json", "--format", "-f", help="Output format: json, markdown, excel, or both"
+    ),
     dpi: int = typer.Option(200, "--dpi", help="Rasterization resolution DPI"),
-    use_vlm: bool = typer.Option(True, "--vlm/--no-vlm", help="Enable or disable local Vision-Language Model"),
-    redact_pii: bool = typer.Option(False, "--redact-pii", help="Detect and redact sensitive credit card and PII numbers"),
+    use_vlm: bool = typer.Option(
+        True, "--vlm/--no-vlm", help="Enable or disable local Vision-Language Model"
+    ),
+    redact_pii: bool = typer.Option(
+        False, "--redact-pii", help="Detect and redact sensitive credit card and PII numbers"
+    ),
 ) -> None:
     """Extract structured data and tables from a document using local VLMs."""
-    console.print(f"[bold blue]DocuVision[/bold blue] processing [green]{file_path.name}[/green] with schema '[cyan]{schema}[/cyan]'...")
+    console.print(
+        f"[bold blue]DocuVision[/bold blue] processing [green]{file_path.name}[/green] with schema '[cyan]{schema}[/cyan]'..."
+    )
 
     pipeline = DocumentPipeline(settings=settings)
     with console.status("[bold green]Executing multimodal extraction pipeline..."):
@@ -66,40 +81,50 @@ def extract(
     meta_table.add_row("SHA-256", result.metadata.sha256_hash[:16] + "...")
     meta_table.add_row("Latency", f"{result.latency_ms} ms")
     meta_table.add_row("Tables Detected", str(len(result.tables)))
-    meta_table.add_row("Validation", "[green]PASSED[/green]" if result.validation_passed else "[yellow]WARNINGS[/yellow]")
+    meta_table.add_row(
+        "Validation", "[green]PASSED[/green]" if result.validation_passed else "[yellow]WARNINGS[/yellow]"
+    )
     if redact_pii:
         meta_table.add_row("PII Redaction", "[magenta]ACTIVE[/magenta]")
     console.print(meta_table)
 
     if result.validation_errors:
-        console.print(Panel(
-            "\n".join(f"[yellow]-[/yellow] {e}" for e in result.validation_errors),
-            title="[yellow]Validation & Math Warnings[/yellow]",
-            border_style="yellow",
-        ))
+        console.print(
+            Panel(
+                "\n".join(f"[yellow]-[/yellow] {e}" for e in result.validation_errors),
+                title="[yellow]Validation & Math Warnings[/yellow]",
+                border_style="yellow",
+            )
+        )
 
     # Format JSON
     json_str = json.dumps(result.structured_data, indent=2, ensure_ascii=False)
     if output_format in ("json", "both"):
-        console.print(Panel(
-            Syntax(json_str, "json", theme="monokai", line_numbers=True),
-            title=f"Structured JSON ({schema})",
-            border_style="green",
-        ))
+        console.print(
+            Panel(
+                Syntax(json_str, "json", theme="monokai", line_numbers=True),
+                title=f"Structured JSON ({schema})",
+                border_style="green",
+            )
+        )
 
     if output_format in ("markdown", "both") and result.markdown_summary:
-        console.print(Panel(
-            result.markdown_summary,
-            title="Markdown Summary",
-            border_style="cyan",
-        ))
+        console.print(
+            Panel(
+                result.markdown_summary,
+                title="Markdown Summary",
+                border_style="cyan",
+            )
+        )
 
     # Handle Excel export
     if output_format == "excel" or (output and output.suffix.lower() == ".xlsx"):
         dest_excel = output or file_path.with_suffix(".xlsx")
         exporter = ExcelExporter()
         exporter.export_to_file(result, dest_excel)
-        console.print(f"[bold green]OK[/bold green] Excel workbook generated at [underline]{dest_excel}[/underline]")
+        console.print(
+            f"[bold green]OK[/bold green] Excel workbook generated at [underline]{dest_excel}[/underline]"
+        )
     elif output:
         output.parent.mkdir(parents=True, exist_ok=True)
         if output_format == "markdown":
@@ -108,16 +133,33 @@ def extract(
             output.write_text(json_str, encoding="utf-8")
         console.print(f"[bold green]OK[/bold green] Output saved to [underline]{output}[/underline]")
 
+    # Auto-index into local search engine
+    try:
+        from docuvision.search.index import DocumentSearchIndex
+
+        DocumentSearchIndex().index_document(result)
+    except Exception:
+        pass
+
 
 @app.command()
 def batch(
-    input_dir: Path = typer.Argument(..., exists=True, file_okay=False, dir_okay=True, help="Directory containing documents"),
+    input_dir: Path = typer.Argument(
+        ..., exists=True, file_okay=False, dir_okay=True, help="Directory containing documents"
+    ),
     schema: str = typer.Option("generic", "--schema", "-s", help="Target extraction schema"),
-    output_dir: Path = typer.Option(Path("./outputs/batch"), "--output-dir", "-o", help="Directory for batch outputs"),
+    output_dir: Path = typer.Option(
+        Path("./outputs/batch"), "--output-dir", "-o", help="Directory for batch outputs"
+    ),
     workers: int = typer.Option(4, "--workers", "-w", help="Concurrent worker count"),
-    output_format: str = typer.Option("all", "--format", "-f", help="Formats to export: json, markdown, excel, all"),
+    output_format: str = typer.Option(
+        "all", "--format", "-f", help="Formats to export: json, markdown, excel, all"
+    ),
     dpi: int = typer.Option(200, "--dpi", help="Rasterization resolution DPI"),
     use_vlm: bool = typer.Option(True, "--vlm/--no-vlm", help="Enable or disable local VLM"),
+    index: bool = typer.Option(
+        True, "--index/--no-index", help="Index processed documents into local FTS5 search engine"
+    ),
 ) -> None:
     """Process a directory of documents concurrently with aggregated summary reporting."""
     processor = BatchProcessor(settings=settings)
@@ -127,7 +169,9 @@ def batch(
         console.print(f"[yellow]No supported documents found in [underline]{input_dir}[/underline][/yellow]")
         return
 
-    console.print(f"[bold blue]DocuVision Batch[/bold blue]: Found [cyan]{len(files)}[/cyan] documents in [underline]{input_dir}[/underline]")
+    console.print(
+        f"[bold blue]DocuVision Batch[/bold blue]: Found [cyan]{len(files)}[/cyan] documents in [underline]{input_dir}[/underline]"
+    )
 
     formats = [output_format] if output_format != "all" else ["json", "markdown", "excel"]
 
@@ -154,6 +198,7 @@ def batch(
                 concurrency=workers,
                 export_formats=formats,
                 progress_callback=on_progress,
+                index_search=index,
             )
         )
 
@@ -163,7 +208,9 @@ def batch(
     table.add_column("Value")
     table.add_row("Total Files", str(batch_result.total_files))
     table.add_row("Successful", f"[green]{batch_result.successful_files}[/green]")
-    table.add_row("Failed", f"[red]{batch_result.failed_files}[/red]" if batch_result.failed_files > 0 else "0")
+    table.add_row(
+        "Failed", f"[red]{batch_result.failed_files}[/red]" if batch_result.failed_files > 0 else "0"
+    )
     table.add_row("Total Pages", str(batch_result.total_pages))
     table.add_row("Total Elapsed", f"{batch_result.total_latency_ms:.1f} ms")
     table.add_row("Reports Saved To", batch_result.output_directory)
@@ -208,9 +255,74 @@ def tables(
 
 
 @app.command()
+def search(
+    query: str = typer.Argument(..., help="Search query string or keywords"),
+    limit: int = typer.Option(10, "--limit", "-n", help="Maximum results to return"),
+    index_dir: Optional[Path] = typer.Option(
+        None, "--index-dir", "-d", help="Index all JSON documents in directory before searching"
+    ),
+    clear: bool = typer.Option(False, "--clear", help="Clear the search index"),
+) -> None:
+    """Full-text search across indexed documents, OCR text, and structured schemas."""
+    from docuvision.search.index import DocumentSearchIndex
+
+    search_index = DocumentSearchIndex()
+    if clear:
+        search_index.clear()
+        console.print("[bold yellow]Search index cleared successfully.[/bold yellow]")
+        if not query or query == "*":
+            return
+
+    if index_dir:
+        count = search_index.index_directory(index_dir)
+        console.print(
+            f"[bold green]OK[/bold green] Indexed [cyan]{count}[/cyan] document(s) from {index_dir}"
+        )
+
+    total_indexed = search_index.count()
+    if total_indexed == 0:
+        console.print(
+            "[yellow]The search index is empty.[/yellow] Run batch extractions or specify --index-dir to index results."
+        )
+        return
+
+    hits = search_index.search(query, limit=limit)
+    if not hits:
+        console.print(
+            f"[yellow]No matching documents found for query:[/yellow] '{query}' (searched {total_indexed} documents)"
+        )
+        return
+
+    table = RichTable(
+        title=f"Search Results for '{query}' ({len(hits)} match(es) in {total_indexed} docs)",
+        border_style="cyan",
+    )
+    table.add_column("Doc ID", style="dim")
+    table.add_column("Filename", style="bold green")
+    table.add_column("Schema", style="cyan")
+    table.add_column("Matched Snippet", style="white")
+    table.add_column("Top Extracted Data", style="dim")
+
+    for hit in hits:
+        preview_str = ", ".join(f"{k}: {v}" for k, v in hit.structured_data_preview.items())
+        snip = hit.snippet.replace("[MATCH]", "[bold yellow]").replace("[/MATCH]", "[/bold yellow]")
+        table.add_row(
+            hit.doc_id,
+            hit.filename,
+            hit.schema_name,
+            snip,
+            preview_str[:60] + "..." if len(preview_str) > 60 else preview_str,
+        )
+
+    console.print(table)
+
+
+@app.command()
 def rasterize(
     file_path: Path = typer.Argument(..., exists=True, readable=True, help="Path to PDF document"),
-    out_dir: Path = typer.Option(Path("./outputs/pages"), "--out-dir", "-d", help="Directory to save page images"),
+    out_dir: Path = typer.Option(
+        Path("./outputs/pages"), "--out-dir", "-d", help="Directory to save page images"
+    ),
     dpi: int = typer.Option(200, "--dpi", help="Render resolution DPI"),
 ) -> None:
     """Render PDF pages into high-resolution PNG images."""
@@ -223,7 +335,9 @@ def rasterize(
             prefix=file_path.stem,
         )
 
-    console.print(f"[bold green]OK[/bold green] Rendered [cyan]{len(saved)}[/cyan] page(s) into [underline]{out_dir}[/underline]:")
+    console.print(
+        f"[bold green]OK[/bold green] Rendered [cyan]{len(saved)}[/cyan] page(s) into [underline]{out_dir}[/underline]:"
+    )
     for p in saved:
         console.print(f"  - {p.name}")
 
@@ -235,12 +349,14 @@ def serve(
     reload: bool = typer.Option(False, "--reload", help="Enable auto-reload for development"),
 ) -> None:
     """Launch the interactive DocuVision Web Studio."""
-    console.print(Panel(
-        f"[bold blue]DocuVision Web Studio v{__version__}[/bold blue]\n"
-        f"Server running at: [bold green]http://{host}:{port}[/bold green]\n"
-        f"Zero-Cloud Document Intelligence Dashboard",
-        border_style="blue",
-    ))
+    console.print(
+        Panel(
+            f"[bold blue]DocuVision Web Studio v{__version__}[/bold blue]\n"
+            f"Server running at: [bold green]http://{host}:{port}[/bold green]\n"
+            f"Zero-Cloud Document Intelligence Dashboard",
+            border_style="blue",
+        )
+    )
     uvicorn.run("docuvision.web.app:app", host=host, port=port, reload=reload)
 
 

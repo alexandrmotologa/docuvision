@@ -1,12 +1,11 @@
 """Tests for document schemas and dynamic catalog."""
 
 from docuvision.core.schemas import (
+    SCHEMA_REGISTRY,
     BalanceSheetSchema,
     GenericKeyValueSchema,
     InvoiceSchema,
-    LabReportSchema,
     ReceiptSchema,
-    SCHEMA_REGISTRY,
     get_schema_class,
     list_available_schemas,
 )
@@ -33,9 +32,7 @@ def test_invoice_schema_validation():
         "invoice_date": "2026-10-12",
         "vendor_name": "Acme Inc",
         "customer_name": "Beta LLC",
-        "line_items": [
-            {"description": "Product X", "quantity": 1, "unit_price": 50.0, "total_price": 50.0}
-        ],
+        "line_items": [{"description": "Product X", "quantity": 1, "unit_price": 50.0, "total_price": 50.0}],
         "total_amount": 50.0,
     }
     model = InvoiceSchema.model_validate(valid_payload)

@@ -1,7 +1,7 @@
 """Tests for privacy and PII redaction engine."""
 
-from PIL import Image
 import pymupdf
+from PIL import Image
 
 from docuvision.core.models import BoundingBox
 from docuvision.privacy.redactor import PIIRedactor
@@ -50,6 +50,7 @@ def test_redact_image():
     redactor = PIIRedactor()
     img = Image.new("RGB", (200, 200), color=(255, 255, 255))
     import io
+
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     raw_png = buf.getvalue()

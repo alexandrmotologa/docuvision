@@ -1,6 +1,7 @@
 """Tests for vector grid table extraction."""
 
 from pathlib import Path
+
 from docuvision.table.extractor import TableExtractor
 
 

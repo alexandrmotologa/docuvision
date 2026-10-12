@@ -1,7 +1,9 @@
 """Tests for FastAPI Web Studio endpoints."""
 
 from pathlib import Path
+
 from fastapi.testclient import TestClient
+
 from docuvision.web.app import app
 
 client = TestClient(app)
@@ -52,7 +54,10 @@ def test_api_tables(sample_invoice_pdf: Path):
 
 def test_api_extract_deterministic(sample_invoice_pdf: Path):
     with open(sample_invoice_pdf, "rb") as f:
-        res = client.post("/api/extract?schema_name=invoice&use_vlm=false&dpi=150", files={"file": ("invoice.pdf", f, "application/pdf")})
+        res = client.post(
+            "/api/extract?schema_name=invoice&use_vlm=false&dpi=150",
+            files={"file": ("invoice.pdf", f, "application/pdf")},
+        )
     assert res.status_code == 200
     data = res.json()
     assert data["metadata"]["filename"] == "invoice.pdf"
@@ -87,7 +92,10 @@ def test_api_custom_schema():
 
 def test_api_export_excel(sample_invoice_pdf: Path):
     with open(sample_invoice_pdf, "rb") as f:
-        ext_res = client.post("/api/extract?schema_name=invoice&use_vlm=false&dpi=150", files={"file": ("invoice.pdf", f, "application/pdf")})
+        ext_res = client.post(
+            "/api/extract?schema_name=invoice&use_vlm=false&dpi=150",
+            files={"file": ("invoice.pdf", f, "application/pdf")},
+        )
     assert ext_res.status_code == 200
     data = ext_res.json()
 
@@ -96,3 +104,9 @@ def test_api_export_excel(sample_invoice_pdf: Path):
     assert "spreadsheetml" in excel_res.headers.get("content-type", "")
     assert len(excel_res.content) > 1000
 
+
+def test_api_search():
+    res = client.get("/api/search?q=invoice")
+    assert res.status_code == 200
+    data = res.json()
+    assert isinstance(data, list)

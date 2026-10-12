@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import difflib
 from typing import List
+
 from docuvision.core.models import Table, TableCell
 
 
@@ -27,7 +28,8 @@ class MultiPageTableStitcher:
         norm2 = [self._normalize_header(h) for h in h2]
 
         matches = sum(
-            1 for a, b in zip(norm1, norm2)
+            1
+            for a, b in zip(norm1, norm2)
             if a == b or difflib.SequenceMatcher(None, a, b).ratio() >= self.header_similarity_threshold
         )
         return (matches / float(len(h1))) >= self.header_similarity_threshold
@@ -75,7 +77,7 @@ class MultiPageTableStitcher:
             if j > i + 1:
                 # Tables were stitched
                 stitched_table = Table(
-                    table_id=f"{current.table_id}_stitched_to_p{tables[j-1].page_number}",
+                    table_id=f"{current.table_id}_stitched_to_p{tables[j - 1].page_number}",
                     page_number=current.page_number,
                     rows=len(unified_matrix),
                     cols=current.cols,

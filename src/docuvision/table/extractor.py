@@ -8,7 +8,8 @@ from typing import List, Optional, Union
 
 import pymupdf
 
-from docuvision.core.config import DocuVisionSettings, settings as default_settings
+from docuvision.core.config import DocuVisionSettings
+from docuvision.core.config import settings as default_settings
 from docuvision.core.models import BoundingBox, Table, TableCell
 
 
@@ -65,7 +66,7 @@ class TableExtractor:
             max_cols = max(len(r) for r in clean_matrix)
             uniform_matrix = [r + [""] * (max_cols - len(r)) for r in clean_matrix]
 
-            headers = [h if h else f"Column_{i+1}" for i, h in enumerate(uniform_matrix[0])]
+            headers = [h if h else f"Column_{i + 1}" for i, h in enumerate(uniform_matrix[0])]
 
             # Calculate normalized bounding box
             x0, y0, x1, y1 = tab.bbox

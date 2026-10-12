@@ -17,11 +17,13 @@ def test_create_dynamic_schema():
     schema_cls = create_dynamic_schema("service_contract", fields)
     assert schema_cls.__name__ == "ServiceContractSchema"
 
-    instance = schema_cls.model_validate({
-        "contract_id": "CNT-2026-99",
-        "signatory_count": 3,
-        "is_active": True,
-    })
+    instance = schema_cls.model_validate(
+        {
+            "contract_id": "CNT-2026-99",
+            "signatory_count": 3,
+            "is_active": True,
+        }
+    )
     assert instance.contract_id == "CNT-2026-99"
     assert instance.signatory_count == 3
     assert instance.is_active is True
