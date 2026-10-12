@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docuvision"
+version = "0.1.0"
+description = "Zero-cloud document intelligence pipeline converting multi-page PDFs, scans, and financial tables into validated JSON using local Vision-Language Models."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Alexandr Motologa", email = "alexandrmotologa@users.noreply.github.com"}
+]
+keywords = [
+    "document-intelligence",
+    "vision-language-models",
+    "pdf-processing",
+    "table-extraction",
+    "ocr-alternative",
+    "local-ai",
+    "fastapi",
+    "zero-cloud"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: General"
+]
+dependencies = [
+    "pymupdf>=1.24.0",
+    "pillow>=10.0.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.2.0",
+    "fastapi>=0.110.0",
+    "uvicorn>=0.29.0",
+    "python-multipart>=0.0.9",
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    "httpx>=0.27.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.4.0"
+]
+
+[project.scripts]
+docuvision = "docuvision.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
