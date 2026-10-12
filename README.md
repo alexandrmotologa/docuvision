@@ -49,10 +49,13 @@ DocuVision converts multi-page PDFs, scans, receipts, invoices, and complex bala
 
 - **Zero cloud exposure**: All rasterization, table parsing, and inference execute locally using Ollama, vLLM, or OpenAI-compatible local runtimes like LM Studio.
 - **Authentic PDF rasterizer**: Direct PyMuPDF rendering engine with configurable DPI, page streaming, and normalized bounding box mapping.
-- **Dual-mode table extractor**: Combines deterministic vector grid parsing with vision-assisted structural inference for borderless and irregular financial statements.
-- **Built-in domain schemas**: Production schemas for commercial invoices, retail receipts, corporate balance sheets, and clinical laboratory reports.
+- **Dual-mode table extractor & stitcher**: Combines deterministic vector grid parsing with vision-assisted structural inference, plus automatic multi-page table continuity merging.
+- **Multi-sheet Excel export**: Compiles extraction results into styled `.xlsx` workbooks across Overview, Extracted Tables, and Audit sheets with openpyxl.
+- **Batch processing engine**: Concurrently processes directories of documents (`docuvision batch`) generating consolidated CSV and JSON summaries.
+- **Privacy & PII redaction**: Automatically masks credit cards, SSN, and sensitive taxpayer codes directly on the document canvas before extraction.
+- **Custom schema designer**: Interactively design, register, and persist user-defined schemas without writing Python code.
 - **Arithmetic reconciliation**: Verifies line item totals, tax calculations, and subtotal consistency against extracted aggregate figures.
-- **Interactive Web Studio**: Built-in FastAPI interface providing split-screen document preview, interactive bounding boxes, and live JSON inspector.
+- **Interactive Web Studio**: Built-in FastAPI interface providing split-screen document preview, interactive bounding boxes, zoom and pan canvas, and live JSON inspector.
 - **Rich terminal CLI**: Built with Typer and Rich, supporting batch processing, model diagnostics, and table previews directly in the console.
 
 ---
@@ -90,6 +93,12 @@ docuvision check
 # Extract structured invoice data to JSON
 docuvision extract sample_invoice.pdf --schema invoice --format json --output invoice_data.json
 
+# Extract structured data to a styled multi-sheet Excel workbook with PII redaction
+docuvision extract sample_invoice.pdf --schema invoice --format excel --output invoice_report.xlsx --redact-pii
+
+# Concurrently process an entire folder of scans
+docuvision batch ./scans/ --schema invoice --output-dir ./outputs/batch --workers 4 --format all
+
 # Extract all detected tables to Markdown
 docuvision tables financial_report.pdf --format markdown
 
@@ -115,9 +124,11 @@ docuvision serve --host 127.0.0.1 --port 8000
 Then open `http://localhost:8000` in your web browser. The studio provides:
 
 1. Drag and drop file ingestion for PDFs and image scans.
-2. Page navigation with visual bounding box highlights.
-3. Live JSON schema validation and copy-to-clipboard actions.
-4. Rendered Markdown table preview with CSV download.
+2. Interactive zoom and pan viewport with 100% reset and fit-to-width.
+3. Interactive bounding box overlays with hover tooltips and bidirectional row highlighting.
+4. Custom Schema Designer modal for creating ad-hoc schemas on the fly.
+5. Multi-sheet Excel workbook download button.
+6. PII redaction toggle for zero-cloud privacy compliance.
 
 | Validated JSON & Bounding Boxes | Rendered Tables View |
 | :---: | :---: |

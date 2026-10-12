@@ -13,6 +13,8 @@ from docuvision.core.schemas import get_schema_class
 from docuvision.rasterizer.engine import PDFRasterizer
 from docuvision.table.extractor import TableExtractor
 from docuvision.table.reconciler import TableReconciler
+from docuvision.table.stitcher import MultiPageTableStitcher
+from docuvision.privacy.redactor import PIIRedactor
 from docuvision.vlm.client import VLMClient
 from docuvision.vlm.parser import VLMParser
 from docuvision.vlm.prompt import PromptBuilder
@@ -26,6 +28,8 @@ class DocumentPipeline:
         settings: Optional[DocuVisionSettings] = None,
         rasterizer: Optional[PDFRasterizer] = None,
         table_extractor: Optional[TableExtractor] = None,
+        table_stitcher: Optional[MultiPageTableStitcher] = None,
+        pii_redactor: Optional[PIIRedactor] = None,
         vlm_client: Optional[VLMClient] = None,
         vlm_parser: Optional[VLMParser] = None,
         prompt_builder: Optional[PromptBuilder] = None,
@@ -34,6 +38,8 @@ class DocumentPipeline:
         self.settings = settings or default_settings
         self.rasterizer = rasterizer or PDFRasterizer(settings=self.settings)
         self.table_extractor = table_extractor or TableExtractor(settings=self.settings)
+        self.table_stitcher = table_stitcher or MultiPageTableStitcher()
+        self.pii_redactor = pii_redactor or PIIRedactor()
         self.vlm_client = vlm_client or VLMClient(settings=self.settings)
         self.vlm_parser = vlm_parser or VLMParser()
         self.prompt_builder = prompt_builder or PromptBuilder()
@@ -128,23 +134,36 @@ class DocumentPipeline:
         dpi: Optional[int] = None,
         use_vlm: bool = True,
         filename: Optional[str] = None,
+        redact_pii: bool = False,
+        stitch_tables: bool = True,
     ) -> DocumentResult:
         """Asynchronously execute full document processing pipeline."""
         start_time = time.perf_counter()
 
+        working_source = source
+        validation_errors: List[str] = []
+
+        if redact_pii:
+            try:
+                redacted_bytes, count = self.pii_redactor.redact_pdf(source)
+                working_source = redacted_bytes
+            except Exception as e:
+                validation_errors.append(f"PII redaction skipped: {e}")
+
         # Step 1: Document metadata
-        metadata = self.rasterizer.inspect_metadata(source=source, filename=filename)
+        metadata = self.rasterizer.inspect_metadata(source=working_source, filename=filename)
 
         # Step 2: Rasterization
         pages: List[DocumentPage] = []
-        for page in self.rasterizer.stream_pages(source=source, dpi=dpi, filename=filename):
+        for page in self.rasterizer.stream_pages(source=working_source, dpi=dpi, filename=filename):
             # Step 3: Extract tables per page
-            # TableExtractor operates on raw source or PyMuPDF page
-            page_tables = self.table_extractor.extract_from_document(source=source)
+            page_tables = self.table_extractor.extract_from_document(source=working_source)
             page.tables = [t for t in page_tables if t.page_number == page.page_number]
             pages.append(page)
 
         all_tables = [t for p in pages for t in p.tables]
+        if stitch_tables and len(all_tables) > 1:
+            all_tables = self.table_stitcher.stitch_tables(all_tables)
 
         # Resolve target schema
         target_schema_cls = custom_schema_cls or get_schema_class(schema_name)
@@ -242,6 +261,8 @@ class DocumentPipeline:
         dpi: Optional[int] = None,
         use_vlm: bool = True,
         filename: Optional[str] = None,
+        redact_pii: bool = False,
+        stitch_tables: bool = True,
     ) -> DocumentResult:
         """Synchronous wrapper for pipeline execution."""
         import asyncio
@@ -254,5 +275,7 @@ class DocumentPipeline:
                 dpi=dpi,
                 use_vlm=use_vlm,
                 filename=filename,
+                redact_pii=redact_pii,
+                stitch_tables=stitch_tables,
             )
         )

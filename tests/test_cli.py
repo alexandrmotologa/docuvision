@@ -53,3 +53,35 @@ def test_cli_extract_no_vlm(sample_invoice_pdf: Path, tmp_path: Path):
     assert res.exit_code == 0
     assert out_file.exists()
     assert "INV" in out_file.read_text(encoding="utf-8") or "line_items" in out_file.read_text(encoding="utf-8")
+
+
+def test_cli_extract_excel(sample_invoice_pdf: Path, tmp_path: Path):
+    out_excel = tmp_path / "report.xlsx"
+    res = runner.invoke(app, [
+        "extract",
+        str(sample_invoice_pdf),
+        "--schema", "invoice",
+        "--no-vlm",
+        "--dpi", "150",
+        "--format", "excel",
+        "--output", str(out_excel),
+        "--redact-pii",
+    ])
+    assert res.exit_code == 0
+    assert out_excel.exists()
+    assert out_excel.stat().st_size > 1000
+
+
+def test_cli_batch(tmp_path: Path):
+    batch_out = tmp_path / "batch_cli_out"
+    res = runner.invoke(app, [
+        "batch",
+        "examples",
+        "--output-dir", str(batch_out),
+        "--no-vlm",
+        "--dpi", "150",
+        "--format", "json",
+    ])
+    assert res.exit_code == 0
+    assert (batch_out / "batch_summary.csv").exists()
+

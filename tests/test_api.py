@@ -64,3 +64,35 @@ def test_api_studio_ui():
     res = client.get("/")
     assert res.status_code == 200
     assert "DocuVision" in res.text
+
+
+def test_api_custom_schema():
+    payload = {
+        "name": "api_test_contract",
+        "description": "API Test Contract",
+        "fields": [
+            {"name": "contract_id", "type": "string", "required": True},
+            {"name": "total_cost", "type": "float", "required": False},
+        ],
+    }
+    create_res = client.post("/api/schemas/custom", json=payload)
+    assert create_res.status_code == 200
+    assert create_res.json()["status"] == "created"
+
+    # Delete
+    del_res = client.delete("/api/schemas/custom/api_test_contract")
+    assert del_res.status_code == 200
+    assert del_res.json()["status"] == "deleted"
+
+
+def test_api_export_excel(sample_invoice_pdf: Path):
+    with open(sample_invoice_pdf, "rb") as f:
+        ext_res = client.post("/api/extract?schema_name=invoice&use_vlm=false&dpi=150", files={"file": ("invoice.pdf", f, "application/pdf")})
+    assert ext_res.status_code == 200
+    data = ext_res.json()
+
+    excel_res = client.post("/api/export/excel", json=data)
+    assert excel_res.status_code == 200
+    assert "spreadsheetml" in excel_res.headers.get("content-type", "")
+    assert len(excel_res.content) > 1000
+

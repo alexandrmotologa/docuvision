@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
 from pydantic import BaseModel, Field
 
@@ -146,7 +147,7 @@ class GenericKeyValueSchema(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Schema Registry
+# Schema Registry & Dynamic Custom Schema Engine
 # ---------------------------------------------------------------------------
 SCHEMA_REGISTRY: Dict[str, Type[BaseModel]] = {
     "invoice": InvoiceSchema,
@@ -156,20 +157,130 @@ SCHEMA_REGISTRY: Dict[str, Type[BaseModel]] = {
     "generic": GenericKeyValueSchema,
 }
 
+CUSTOM_SCHEMAS_DIR = Path("./.docuvision/schemas")
+
+
+def create_dynamic_schema(
+    schema_name: str,
+    fields: List[Dict[str, Any]],
+    docstring: Optional[str] = None,
+) -> Type[BaseModel]:
+    """Dynamically construct a Pydantic model class from field definitions."""
+    from pydantic import create_model
+
+    field_definitions: Dict[str, Any] = {}
+
+    type_mapping = {
+        "string": (Optional[str], None),
+        "str": (Optional[str], None),
+        "number": (Optional[float], None),
+        "float": (Optional[float], None),
+        "integer": (Optional[int], None),
+        "int": (Optional[int], None),
+        "boolean": (Optional[bool], None),
+        "bool": (Optional[bool], None),
+        "list_strings": (List[str], []),
+        "list_objects": (List[Dict[str, Any]], []),
+        "dict": (Dict[str, Any], {}),
+    }
+
+    for f in fields:
+        fname = f.get("name", "").strip().replace(" ", "_")
+        if not fname:
+            continue
+        ftype_str = f.get("type", "string").lower().strip()
+        fdesc = f.get("description", "")
+        frequired = bool(f.get("required", False))
+
+        type_tuple = type_mapping.get(ftype_str, (Optional[str], None))
+        python_type, default_val = type_tuple
+
+        if frequired:
+            field_definitions[fname] = (python_type, Field(..., description=fdesc))
+        else:
+            if isinstance(default_val, list):
+                field_definitions[fname] = (python_type, Field(default_factory=list, description=fdesc))
+            elif isinstance(default_val, dict):
+                field_definitions[fname] = (python_type, Field(default_factory=dict, description=fdesc))
+            else:
+                field_definitions[fname] = (python_type, Field(default=default_val, description=fdesc))
+
+    model_name = "".join(part.capitalize() for part in schema_name.replace("-", "_").split("_")) + "Schema"
+    dynamic_model = create_model(model_name, **field_definitions)
+    dynamic_model.__doc__ = docstring or f"Custom dynamic schema for {schema_name}"
+    return dynamic_model
+
+
+def save_custom_schema(schema_name: str, fields: List[Dict[str, Any]], description: str = "") -> Path:
+    """Persist a custom schema definition as JSON and register into runtime."""
+    import json
+
+    CUSTOM_SCHEMAS_DIR.mkdir(parents=True, exist_ok=True)
+    target_file = CUSTOM_SCHEMAS_DIR / f"{schema_name.lower().strip()}.json"
+
+    payload = {
+        "name": schema_name.lower().strip(),
+        "description": description,
+        "fields": fields,
+    }
+    target_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    # Register into runtime
+    model_cls = create_dynamic_schema(schema_name, fields, docstring=description)
+    SCHEMA_REGISTRY[schema_name.lower().strip()] = model_cls
+    return target_file
+
+
+def load_custom_schemas() -> None:
+    """Load all persisted custom schemas from disk into SCHEMA_REGISTRY."""
+    import json
+
+    if not CUSTOM_SCHEMAS_DIR.exists():
+        return
+
+    for f in CUSTOM_SCHEMAS_DIR.glob("*.json"):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+            s_name = data.get("name") or f.stem
+            s_desc = data.get("description", "")
+            s_fields = data.get("fields", [])
+            model_cls = create_dynamic_schema(s_name, s_fields, docstring=s_desc)
+            SCHEMA_REGISTRY[s_name.lower().strip()] = model_cls
+        except Exception:
+            pass
+
+
+def delete_custom_schema(schema_name: str) -> bool:
+    """Delete a custom schema from disk and unregister."""
+    target_file = CUSTOM_SCHEMAS_DIR / f"{schema_name.lower().strip()}.json"
+    if target_file.exists():
+        target_file.unlink()
+        SCHEMA_REGISTRY.pop(schema_name.lower().strip(), None)
+        return True
+    return False
+
+
+# Initial load of custom schemas
+load_custom_schemas()
+
 
 def get_schema_class(name: str) -> Type[BaseModel]:
     """Retrieve Pydantic schema class by name or default to generic."""
     normalized = name.lower().strip().replace("-", "_").replace(" ", "_")
+    if normalized not in SCHEMA_REGISTRY:
+        load_custom_schemas()
     return SCHEMA_REGISTRY.get(normalized, GenericKeyValueSchema)
 
 
 def list_available_schemas() -> Dict[str, Dict[str, Any]]:
     """Return dictionary of registered schema names and their JSON schema specs."""
+    load_custom_schemas()
     result = {}
     for name, model_cls in SCHEMA_REGISTRY.items():
         result[name] = {
             "title": model_cls.__name__,
             "description": model_cls.__doc__ or "",
             "json_schema": model_cls.model_json_schema(),
+            "is_custom": (CUSTOM_SCHEMAS_DIR / f"{name}.json").exists(),
         }
     return result

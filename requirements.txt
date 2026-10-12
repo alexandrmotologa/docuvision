@@ -4,8 +4,8 @@ anyio==4.15.1
 certifi==2026.7.22
 click==8.5.0
 colorama==0.4.6
-# Editable Git install with no remote (docuvision==0.1.0)
--e c:\users\alexander\.gemini\antigravity\scratch\docuvision
+-e git+https://github.com/alexandrmotologa/docuvision.git@da9aba4606fbd0b44282b60b87b15a44957b1910#egg=docuvision
+et_xmlfile==2.0.0
 fastapi==0.143.0
 h11==0.16.0
 httpcore==1.0.9
@@ -14,6 +14,7 @@ idna==3.20
 iniconfig==2.3.1
 markdown-it-py==4.2.0
 mdurl==0.1.2
+openpyxl==3.1.5
 opentelemetry-api==1.45.1
 packaging==26.3
 pillow==12.3.0
